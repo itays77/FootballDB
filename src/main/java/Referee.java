@@ -27,11 +27,10 @@ public class Referee {
     public void insertReferee(FootballDBConnection dbConn) throws SQLException {
         String sql = "INSERT INTO referees (referee_name, age, experience) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, this.refereeName);
-            pstmt.setInt(2, this.age);
-            pstmt.setInt(3, this.experience);
+            pstmt.setString(1, refereeName);
+            pstmt.setInt(2, age);
+            pstmt.setInt(3, experience);
             int affectedRows = pstmt.executeUpdate();
-
             if (affectedRows > 0) {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -41,7 +40,6 @@ public class Referee {
             }
         }
     }
-
     public static Referee getRefereeById(FootballDBConnection dbConn, int refereeId) throws SQLException {
         String sql = "SELECT * FROM referees WHERE referee_id = ?";
         try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(sql)) {

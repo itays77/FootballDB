@@ -8,6 +8,10 @@ public class Team {
     private Coach coach;
     private List<Player> players;
     private int points;
+    private int numOfWins;
+    private int numOfDraws;
+    private int numOfLosses;
+
 
     // Constructor
     public Team(String teamName, Coach coach) {
@@ -15,6 +19,9 @@ public class Team {
         this.coach = coach;
         this.players = new ArrayList<>();
         this.points = 0;
+        this.numOfDraws = 0;
+        this.numOfLosses = 0;
+        this.numOfWins = 0;
     }
 
     // Getters and setters

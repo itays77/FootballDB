@@ -23,10 +23,9 @@ public class Stadium {
     public void insertStadium(FootballDBConnection dbConn) throws SQLException {
         String sql = "INSERT INTO stadiums (stadium_name, capacity) VALUES (?, ?)";
         try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, this.stadiumName);
-            pstmt.setInt(2, this.capacity);
+            pstmt.setString(1, stadiumName);
+            pstmt.setInt(2, capacity);
             int affectedRows = pstmt.executeUpdate();
-
             if (affectedRows > 0) {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -53,4 +52,6 @@ public class Stadium {
     }
 
     // You can add update and delete methods as needed
+
+
 }

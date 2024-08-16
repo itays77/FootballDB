@@ -1,4 +1,6 @@
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Player {
     private int playerId;
@@ -66,6 +68,25 @@ public class Player {
         }
         return null;
     }
+
+    public static List<Player> getPlayersWithoutTeam(FootballDBConnection dbConn) throws SQLException {
+        List<Player> playersWithoutTeam = new ArrayList<>();
+        String sql = "SELECT p.* FROM players p LEFT JOIN team_players tp ON p.player_id = tp.player_id WHERE tp.team_id IS NULL";
+        try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Player player = new Player();
+                player.setPlayerId(rs.getInt("player_id"));
+                player.setPlayerName(rs.getString("player_name"));
+                player.setAge(rs.getInt("age"));
+                player.setShirtNumber(rs.getInt("shirt_number"));
+                player.setGoals(rs.getInt("goals"));
+                playersWithoutTeam.add(player);
+            }
+        }
+        return playersWithoutTeam;
+    }
+
 
     public void updatePlayer(FootballDBConnection dbConn) throws SQLException {
         String sql = "UPDATE players SET player_name = ?, age = ?, shirt_number = ?, goals = ? WHERE player_id = ?";

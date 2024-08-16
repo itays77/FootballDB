@@ -1,4 +1,6 @@
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Coach {
     private int coachId;
@@ -57,5 +59,19 @@ public class Coach {
         return null;
     }
 
-    // You can add update and delete methods as needed
+    public static List<Coach> getCoachesWithoutTeam(FootballDBConnection dbConn) throws SQLException {
+        List<Coach> coachesWithoutTeam = new ArrayList<>();
+        String sql = "SELECT c.* FROM coaches c LEFT JOIN teams t ON c.coach_id = t.coach_id WHERE t.team_id IS NULL";
+        try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Coach coach = new Coach(rs.getString("coach_name"), rs.getInt("experience"), rs.getInt("age"));
+                coach.setCoachId(rs.getInt("coach_id"));
+                coachesWithoutTeam.add(coach);
+            }
+        }
+        return coachesWithoutTeam;
+    }
+
+
 }
