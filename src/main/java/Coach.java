@@ -73,5 +73,20 @@ public class Coach {
         return coachesWithoutTeam;
     }
 
+    public void updateCoach(FootballDBConnection dbConn) throws SQLException {
+        String sql = "UPDATE coaches SET coach_name = ?, experience = ?, age = ? WHERE coach_id = ?";
+        try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, this.coachName);
+            pstmt.setInt(2, this.experience);
+            pstmt.setInt(3, this.age);
+            pstmt.setInt(4, this.coachId);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Updating coach failed, no rows affected.");
+            }
+        }
+    }
+
 
 }

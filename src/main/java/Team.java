@@ -107,5 +107,47 @@ public class Team {
         return null;
     }
 
-    // You can add update and delete methods as needed
+    public void updateTeam(FootballDBConnection dbConn) throws SQLException {
+        Connection conn = dbConn.getConnection();
+        conn.setAutoCommit(false);
+        try {
+            // Update team information
+            String teamSql = "UPDATE teams SET team_name = ?, coach_id = ?, points = ? WHERE team_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(teamSql)) {
+                pstmt.setString(1, this.teamName);
+                pstmt.setInt(2, this.coach.getCoachId());
+                pstmt.setInt(3, this.points);
+                pstmt.setInt(4, this.teamId);
+
+                int affectedRows = pstmt.executeUpdate();
+                if (affectedRows == 0) {
+                    throw new SQLException("Updating team failed, no rows affected.");
+                }
+            }
+
+            // Update team players
+            String deleteSql = "DELETE FROM team_players WHERE team_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(deleteSql)) {
+                pstmt.setInt(1, this.teamId);
+                pstmt.executeUpdate();
+            }
+
+            String insertSql = "INSERT INTO team_players (team_id, player_id) VALUES (?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
+                for (Player player : this.players) {
+                    pstmt.setInt(1, this.teamId);
+                    pstmt.setInt(2, player.getPlayerId());
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
 }

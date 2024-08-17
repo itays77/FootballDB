@@ -55,5 +55,20 @@ public class Referee {
         return null;
     }
 
-    // You can add update and delete methods as needed
+    public void updateReferee(FootballDBConnection dbConn) throws SQLException {
+        String sql = "UPDATE referees SET referee_name = ?, age = ?, experience = ? WHERE referee_id = ?";
+        try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, this.refereeName);
+            pstmt.setInt(2, this.age);
+            pstmt.setInt(3, this.experience);
+            pstmt.setInt(4, this.refereeId);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Updating referee failed, no rows affected.");
+            }
+        }
+    }
+
+
 }

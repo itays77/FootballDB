@@ -19,49 +19,29 @@ public class Main {
 
             try {
                 switch (choice) {
-                    case 1:
-                        viewAllTeams();
-                        break;
-                    case 2:
-                        viewTeamDetails();
-                        break;
-                    case 3:
-                        viewAllPlayers();
-                        break;
-                    case 4:
-                        viewAllCoaches();
-                        break;
-                    case 5:
-                        viewPlayersWithoutTeam();
-                        break;
-                    case 6:
-                        viewAllMatches();
-                        break;
-                    case 7:
-                        viewTopGolasScorers();
-                        break;
-                    case 8:
-                        addPlayer();
-                        break;
-                    case 9:
-                        addReferee();
-                        break;
-                    case 10:
-                        addCoach();
-                        break;
-                    case 11:
-                        addStadium();
-                        break;
-                    case 12:
-                        addTeam();
-                        break;
-                    case 13:
-                        viewLeagueStandings();
-                        break;
-                    case 14:
-                        customQuery();
-                        break;
-                    case 15:
+                    // View operations
+                    case 1: viewAllTeams(); break;
+                    case 2: viewTeamDetails(); break;
+                    case 3: viewAllPlayers(); break;
+                    case 4: viewAllCoaches(); break;
+                    case 5: viewPlayersWithoutTeam(); break;
+                    case 6: viewAllMatches(); break;
+                    case 7: viewTopGolasScorers(); break;
+                    case 8: viewLeagueStandings(); break;
+                    // Update operations
+                    case 9: updatePlayer(); break;
+                    case 10: updateCoach(); break;
+                    case 11: updateReferee(); break;
+                    case 12: updateTeam(); break;
+                    // Add operations
+                    case 13: addPlayer(); break;
+                    case 14: addCoach(); break;
+                    case 15: addReferee(); break;
+                    case 16: addStadium(); break;
+                    case 17: addTeam(); break;
+                    // Custom query and exit
+                    case 18: customQuery(); break;
+                    case 19:
                         System.out.println("Exiting program. Goodbye!");
                         System.exit(0);
                     default:
@@ -77,6 +57,7 @@ public class Main {
 
     private static void displayMenu() {
         System.out.println("\n--- Football Database Menu ---");
+        System.out.println("View Operations:");
         System.out.println("1. View all teams");
         System.out.println("2. View team details (players and coach)");
         System.out.println("3. View all players");
@@ -84,14 +65,21 @@ public class Main {
         System.out.println("5. View players without a team");
         System.out.println("6. View all matches");
         System.out.println("7. View players by goals");
-        System.out.println("8. Add a new player");
-        System.out.println("9. Add a new referee");
-        System.out.println("10. Add a new coach");
-        System.out.println("11. Add a new stadium");
-        System.out.println("12. Add a new team");
-        System.out.println("13. View league standings");
-        System.out.println("14. Custom Query");
-        System.out.println("15. Exit");
+        System.out.println("8. View league standings");
+        System.out.println("Update Operations:");
+        System.out.println("9. Update player");
+        System.out.println("10. Update coach");
+        System.out.println("11. Update referee");
+        System.out.println("12. Update team");
+        System.out.println("Add Operations:");
+        System.out.println("13. Add a new player");
+        System.out.println("14. Add a new coach");
+        System.out.println("15. Add a new referee");
+        System.out.println("16. Add a new stadium");
+        System.out.println("17. Add a new team");
+        System.out.println("Build Custom Query:");
+        System.out.println("18. Custom Query");
+        System.out.println("19. Exit");
         System.out.print("Enter your choice: ");
     }
 
@@ -202,8 +190,6 @@ public class Main {
             }
         }
     }
-
-
 
     private static void viewTeamDetails() {
         System.out.print("Enter team ID: ");
@@ -412,7 +398,7 @@ public class Main {
 
         StringBuilder queryBuilder = new StringBuilder();
         if (team2Id == null) {
-            // Query for a single team (unchanged)
+            // Query for a single team
             queryBuilder.append(
                     "SELECT m.match_id, " +
                             "CASE WHEN m.team1_id = ? THEN t1.team_name ELSE t2.team_name END AS selected_team_name, " +
@@ -733,5 +719,238 @@ public class Main {
             dbConn.closeConnection();
         }
     }
+
+    private static void updatePlayer() throws SQLException, ClassNotFoundException {
+        dbConn.connect();
+        try {
+            // First, display all players
+            System.out.println("All players:");
+            String allPlayersSql = "SELECT player_id, player_name, age, shirt_number, goals FROM players ORDER BY player_id";
+            try (PreparedStatement pstmt = dbConn.getConnection().prepareStatement(allPlayersSql);
+                 ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    System.out.printf("ID: %d, Name: %-20s Age: %2d, Shirt: %2d, Goals: %2d%n",
+                            rs.getInt("player_id"),
+                            rs.getString("player_name"),
+                            rs.getInt("age"),
+                            rs.getInt("shirt_number"),
+                            rs.getInt("goals"));
+                }
+            }
+
+            System.out.print("\nEnter player ID to update: ");
+            int playerId = scanner.nextInt();
+            scanner.nextLine();
+
+            Player player = Player.getPlayerById(dbConn, playerId);
+            if (player == null) {
+                System.out.println("Player not found.");
+                return;
+            }
+
+            System.out.println("Current player details:");
+            System.out.printf("Name: %s, Age: %d, Shirt Number: %d, Goals: %d%n",
+                    player.getPlayerName(), player.getAge(), player.getShirtNumber(), player.getGoals());
+
+            System.out.print("Enter new name (or press Enter to keep current): ");
+            String name = scanner.nextLine();
+            if (!name.isEmpty()) {
+                player.setPlayerName(name);
+            }
+
+            System.out.print("Enter new age (or -1 to keep current): ");
+            int age = scanner.nextInt();
+            if (age != -1) {
+                player.setAge(age);
+            }
+
+            System.out.print("Enter new shirt number (or -1 to keep current): ");
+            int shirtNumber = scanner.nextInt();
+            if (shirtNumber != -1) {
+                player.setShirtNumber(shirtNumber);
+            }
+
+            System.out.print("Enter new goals (or -1 to keep current): ");
+            int goals = scanner.nextInt();
+            if (goals != -1) {
+                player.setGoals(goals);
+            }
+
+            player.updatePlayer(dbConn);
+            System.out.println("Player updated successfully.");
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
+
+    private static void updateCoach() throws SQLException, ClassNotFoundException {
+        dbConn.connect();
+        try {
+            System.out.print("Enter coach ID to update: ");
+            int coachId = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            Coach coach = Coach.getCoachById(dbConn, coachId);
+            if (coach == null) {
+                System.out.println("Coach not found.");
+                return;
+            }
+
+            System.out.println("Current coach details:");
+            System.out.printf("Name: %s, Age: %d, Experience: %d years%n",
+                    coach.getCoachName(), coach.getAge(), coach.getExperience());
+
+            System.out.print("Enter new name (or press Enter to keep current): ");
+            String name = scanner.nextLine();
+            if (!name.isEmpty()) {
+                coach.setCoachName(name);
+            }
+
+            System.out.print("Enter new age (or -1 to keep current): ");
+            int age = scanner.nextInt();
+            if (age != -1) {
+                coach.setAge(age);
+            }
+
+            System.out.print("Enter new years of experience (or -1 to keep current): ");
+            int experience = scanner.nextInt();
+            if (experience != -1) {
+                coach.setExperience(experience);
+            }
+
+            coach.updateCoach(dbConn);
+            System.out.println("Coach updated successfully.");
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
+    private static void updateReferee() throws SQLException, ClassNotFoundException {
+        dbConn.connect();
+        try {
+            System.out.print("Enter referee ID to update: ");
+            int refereeId = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            Referee referee = Referee.getRefereeById(dbConn, refereeId);
+            if (referee == null) {
+                System.out.println("Referee not found.");
+                return;
+            }
+
+            System.out.println("Current referee details:");
+            System.out.printf("Name: %s, Age: %d, Experience: %d years%n",
+                    referee.getRefereeName(), referee.getAge(), referee.getExperience());
+
+            System.out.print("Enter new name (or press Enter to keep current): ");
+            String name = scanner.nextLine();
+            if (!name.isEmpty()) {
+                referee.setRefereeName(name);
+            }
+
+            System.out.print("Enter new age (or -1 to keep current): ");
+            int age = scanner.nextInt();
+            if (age != -1) {
+                referee.setAge(age);
+            }
+
+            System.out.print("Enter new years of experience (or -1 to keep current): ");
+            int experience = scanner.nextInt();
+            if (experience != -1) {
+                referee.setExperience(experience);
+            }
+
+            referee.updateReferee(dbConn);
+            System.out.println("Referee updated successfully.");
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
+
+    private static void updateTeam() throws SQLException, ClassNotFoundException {
+        dbConn.connect();
+        try {
+            System.out.print("Enter team ID to update: ");
+            int teamId = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            Team team = Team.getTeamById(dbConn, teamId);
+            if (team == null) {
+                System.out.println("Team not found.");
+                return;
+            }
+
+            System.out.println("Current team details:");
+            System.out.printf("Name: %s, Coach: %s%n", team.getTeamName(), team.getCoach().getCoachName());
+
+            System.out.print("Enter new team name (or press Enter to keep current): ");
+            String name = scanner.nextLine();
+            if (!name.isEmpty()) {
+                team.setTeamName(name);
+            }
+
+            System.out.print("Do you want to replace the coach? (y/n): ");
+            if (scanner.nextLine().toLowerCase().equals("y")) {
+                List<Coach> availableCoaches = Coach.getCoachesWithoutTeam(dbConn);
+                if (availableCoaches.isEmpty()) {
+                    System.out.println("No coaches available. Keeping current coach.");
+                } else {
+                    System.out.println("Available coaches:");
+                    for (Coach coach : availableCoaches) {
+                        System.out.printf("%d: %s%n", coach.getCoachId(), coach.getCoachName());
+                    }
+                    System.out.print("Enter the ID of the new coach: ");
+                    int newCoachId = scanner.nextInt();
+                    Coach newCoach = Coach.getCoachById(dbConn, newCoachId);
+                    if (newCoach != null) {
+                        team.setCoach(newCoach);
+                    } else {
+                        System.out.println("Invalid coach ID. Keeping current coach.");
+                    }
+                }
+            }
+
+            System.out.print("Do you want to replace a player? (y/n): ");
+            if (scanner.nextLine().toLowerCase().equals("y")) {
+                System.out.println("Current players:");
+                List<Player> currentPlayers = team.getPlayers();
+                for (int i = 0; i < currentPlayers.size(); i++) {
+                    System.out.printf("%d: %s%n", i + 1, currentPlayers.get(i).getPlayerName());
+                }
+                System.out.print("Enter the number of the player to replace: ");
+                int playerIndex = scanner.nextInt() - 1;
+                scanner.nextLine(); // Consume newline
+
+                if (playerIndex >= 0 && playerIndex < currentPlayers.size()) {
+                    List<Player> availablePlayers = Player.getPlayersWithoutTeam(dbConn);
+                    if (availablePlayers.isEmpty()) {
+                        System.out.println("No players available for replacement.");
+                    } else {
+                        System.out.println("Available players:");
+                        for (Player player : availablePlayers) {
+                            System.out.printf("%d: %s%n", player.getPlayerId(), player.getPlayerName());
+                        }
+                        System.out.print("Enter the ID of the new player: ");
+                        int newPlayerId = scanner.nextInt();
+                        Player newPlayer = Player.getPlayerById(dbConn, newPlayerId);
+                        if (newPlayer != null) {
+                            currentPlayers.set(playerIndex, newPlayer);
+                            team.setPlayers(currentPlayers);
+                        } else {
+                            System.out.println("Invalid player ID. No changes made.");
+                        }
+                    }
+                } else {
+                    System.out.println("Invalid player number. No changes made.");
+                }
+            }
+
+            team.updateTeam(dbConn);
+            System.out.println("Team updated successfully.");
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
+
+
 }
 
